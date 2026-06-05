@@ -7,7 +7,6 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             TeacherSeeder::class,
-            StudentAttendanceSeeder::class,
         ]);
     }
 }
