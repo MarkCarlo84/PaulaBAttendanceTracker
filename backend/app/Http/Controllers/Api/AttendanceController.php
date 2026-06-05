@@ -9,6 +9,20 @@ use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 class AttendanceController extends Controller
 {
+    public static function getRolloverHour(): int
+    {
+        $setting = \App\Models\Setting::where('key', 'rollover_hour')->value('value');
+        return $setting !== null ? (int) $setting : 17;
+    }
+
+    public static function getSchoolDay(): Carbon
+    {
+        $rollover = static::getRolloverHour();
+        $now = Carbon::now();
+        $cutoff = Carbon::today()->setHour($rollover)->setMinute(0)->setSecond(0);
+        return $now->greaterThanOrEqualTo($cutoff) ? Carbon::tomorrow() : Carbon::today();
+    }
+
     public function scan(Request $request)
     {
         if ($request->has('student_id') && !$request->has('qr_data')) {
@@ -33,14 +47,15 @@ class AttendanceController extends Controller
                 return response()->json(['message' => 'Outdated QR code. Please use the latest QR code for this student.'], 422);
             }
         }
-        $today = Carbon::today()->toDateString();
+        $today = static::getSchoolDay()->toDateString();
         $existing = Attendance::where('student_id', $student->id)
             ->whereDate('attendance_date', $today)
             ->first();
         if ($existing) {
-            return response()->json([
-                'message' => 'Attendance already recorded today.',
-                'student' => [
+        return response()->json([
+            'message' => 'Attendance already recorded today.',
+            'school_day' => $today,
+            'student' => [
                     'name' => $student->full_name,
                     'student_id' => $student->student_id,
                     'section' => $student->section,
@@ -57,6 +72,7 @@ class AttendanceController extends Controller
         ]);
         return response()->json([
             'message' => 'Attendance recorded successfully',
+            'school_day' => $today,
             'student' => [
                 'name' => $student->full_name,
                 'student_id' => $student->student_id,
@@ -67,7 +83,7 @@ class AttendanceController extends Controller
     }
     public function today(Request $request)
     {
-        $today = Carbon::today()->toDateString();
+        $today = static::getSchoolDay()->toDateString();
         $section = $request->input('section');
         $gender = $request->input('gender');
         $perPage = (int) $request->input('per_page', 10);
@@ -111,6 +127,8 @@ class AttendanceController extends Controller
         return response()->json([
             'attendances' => $paginated,
             'date' => $today,
+            'school_day' => $today,
+            'rollover_hour' => static::getRolloverHour(),
             'totals' => [
                 'present' => $presentCount,
                 'absent' => $absentCount,
@@ -157,14 +175,18 @@ class AttendanceController extends Controller
                   ->orWhere('student_id', 'like', "%{$search}%");
             });
         }
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+        $perPage = (int) $request->input('per_page', 50);
         $attendances = $query->orderBy('attendance_date', 'desc')
             ->orderBy('time_in', 'desc')
-            ->paginate(50);
+            ->paginate($perPage);
         $summary = [
-            'total_records' => Attendance::whereBetween('attendance_date', [$dateFrom, $dateTo])->count(),
-            'present' => Attendance::whereBetween('attendance_date', [$dateFrom, $dateTo])->where('status', 'PRESENT')->count(),
-            'absent' => Attendance::whereBetween('attendance_date', [$dateFrom, $dateTo])->where('status', 'ABSENT')->count(),
-            'late' => Attendance::whereBetween('attendance_date', [$dateFrom, $dateTo])->where('status', 'LATE')->count(),
+            'total_records' => (clone $query)->count(),
+            'present' => (clone $query)->where('status', 'PRESENT')->count(),
+            'absent' => (clone $query)->where('status', 'ABSENT')->count(),
+            'late' => (clone $query)->where('status', 'LATE')->count(),
         ];
         return response()->json([
             'attendances' => $attendances,

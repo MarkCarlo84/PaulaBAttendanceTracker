@@ -9,6 +9,7 @@ import StudentForm from './pages/StudentForm'
 import QRCodeManager from './pages/QRCodeManager'
 import Scanner from './pages/Scanner'
 import AttendanceReport from './pages/AttendanceReport'
+import AttendanceHistory from './pages/AttendanceHistory'
 import Sections from './pages/Sections'
 import Settings from './pages/Settings'
 import StudentProfile from './pages/StudentProfile'
@@ -28,6 +29,7 @@ export default function App() {
           <Route path="/sections" element={<Sections />} />
           <Route path="/qr-codes" element={<QRCodeManager />} />
           <Route path="/attendance" element={<AttendanceReport />} />
+          <Route path="/attendance/history" element={<AttendanceHistory />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/students/:id/profile" element={<StudentProfile />} />
         </Route>

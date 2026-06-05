@@ -10,6 +10,7 @@ const pageTitles = {
   '/qr-codes': 'QR Code Management',
   '/scanner': 'Attendance Scanner',
   '/attendance': 'Attendance Report',
+  '/attendance/history': 'Attendance History',
 }
 
 export default function Layout() {

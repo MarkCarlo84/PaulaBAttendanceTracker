@@ -154,7 +154,7 @@ export default function AttendanceReport() {
     todaySections = data.sections || []
   }
 
-  const rate = totalCount > 0 ? Math.round(((presentCount + lateCount) / totalCount) * 100) : 0
+  const rate = totalCount > 0 ? Math.round((presentCount / totalCount) * 100) : 0
 
   const STATUS_MAP = { present: 'PRESENT', absent: 'ABSENT', late: 'LATE' }
 
@@ -229,9 +229,17 @@ export default function AttendanceReport() {
       )}
 
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">
-          {isRangeMode ? 'Attendance Report' : "Today's Attendance"}
-        </h2>
+        <div>
+          <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">
+            {isRangeMode ? 'Attendance Report' : "Today's Attendance"}
+          </h2>
+          {!isRangeMode && data?.school_day && (
+            <p className="text-xs text-gray-400 mt-0.5">
+              School Day: {data.school_day}
+              {data.rollover_hour ? ` (rollover at ${data.rollover_hour}:00)` : ''}
+            </p>
+          )}
+        </div>
         <label className="flex items-center gap-2 text-sm text-gray-500 cursor-pointer">
           <div className={`w-10 h-5 rounded-full transition-colors ${isRangeMode ? 'bg-gray-900' : 'bg-gray-200'}`}
             onClick={() => setIsRangeMode(!isRangeMode)}>
@@ -272,7 +280,7 @@ export default function AttendanceReport() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 mb-6">
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-6">
         <div className="card p-4 border-l-4 border-l-gray-900">
           <div className="text-2xl font-bold text-gray-900">{totalCount}</div>
           <div className="text-xs text-gray-500 mt-0.5">{isRangeMode ? 'Total Records' : 'Total Students'}</div>
@@ -282,7 +290,11 @@ export default function AttendanceReport() {
           <div className="text-xs text-gray-500 mt-0.5">Present</div>
         </div>
         <div className="card p-4 border-l-4 border-l-gray-400">
-          <div className="text-2xl font-bold text-gray-600">{absentCount}</div>
+          <div className="text-2xl font-bold text-gray-600">{lateCount}</div>
+          <div className="text-xs text-gray-500 mt-0.5">Late</div>
+        </div>
+        <div className="card p-4 border-l-4 border-l-gray-200">
+          <div className="text-2xl font-bold text-gray-400">{absentCount}</div>
           <div className="text-xs text-gray-500 mt-0.5">Absent</div>
         </div>
         <div className="card p-4 border-l-4 border-l-gray-900">

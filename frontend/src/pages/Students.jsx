@@ -44,7 +44,7 @@ export default function Students() {
       .finally(() => setLoading(false))
   }
 
-  useEffect(() => { fetchStudents() }, [page, search, sectionFilter])
+  useEffect(() => { fetchStudents() }, [page, search, sectionFilter, genderFilter])
 
   const handleDelete = async (id) => {
     setDeleteTarget({ type: 'single', id })

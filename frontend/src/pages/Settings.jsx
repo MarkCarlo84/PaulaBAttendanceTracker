@@ -35,6 +35,7 @@ export default function Settings() {
     { key: 'school_name', label: 'School Name', type: 'text' },
     { key: 'term_label', label: 'Term/Label', type: 'text' },
     { key: 'auto_clear_days', label: 'Auto-clear attendance after N days', type: 'number' },
+    { key: 'rollover_hour', label: 'Attendance rollover hour (24h format, e.g. 17 for 5PM)', type: 'number' },
   ]
 
   if (loading) {
